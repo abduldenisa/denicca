@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rencana Diet Puasa Intermiten</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
-      margin: 0;
       background: url('images/foto1.jpg') no-repeat center center fixed;
       background-size: cover;
       background-color: #ffe6f0;
       color: #4b004b;
+      padding: 20px;
+      margin: 0;
     }
 
     h1 {
@@ -24,18 +25,39 @@
       font-size: 1.5em;
     }
 
+    .section {
+      margin: 20px 0;
+      background: rgba(255,255,255,0.9);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(214, 51, 132, 0.2);
+    }
+
+    #notification-settings {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .progress-ring {
+      width: 150px;
+      height: 150px;
+      margin: auto;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: rgba(255, 240, 245, 0.95);
-      box-shadow: 0 0 10px rgba(214, 51, 132, 0.2);
-      border-radius: 10px;
-      overflow: hidden;
       margin-top: 20px;
     }
 
     th, td {
-      padding: 10px;
+      padding: 8px;
       border: 1px solid #f3c4d6;
       text-align: center;
       font-size: 14px;
@@ -47,7 +69,7 @@
     }
 
     input[type="checkbox"] {
-      transform: scale(1.3);
+      transform: scale(1.2);
       accent-color: #d63384;
     }
 
@@ -65,7 +87,6 @@
         background: rgba(255,255,255,0.85);
         padding: 10px;
         border-radius: 10px;
-        box-shadow: 0 0 5px rgba(214, 51, 132, 0.2);
       }
 
       td {
@@ -74,18 +95,12 @@
         padding: 8px 10px;
         border: none;
         border-bottom: 1px solid #f3c4d6;
-        font-size: 15px;
-      }
-
-      td:last-child {
-        border-bottom: none;
       }
 
       td::before {
         content: attr(data-label);
         font-weight: bold;
         color: #d63384;
-        margin-right: 10px;
       }
     }
   </style>
@@ -93,24 +108,52 @@
 <body>
 
 <audio autoplay loop>
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6b4eaf2242.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6b4eaf2242.mp3" type="audio/mpeg" />
 </audio>
 
 <h1>💖 Rencana Diet Puasa Intermiten 5 Bulan 💖</h1>
 
+<div class="section">
+  <strong>💑 Momen Kita Berdua</strong>
+  <div class="photo-gallery">
+    <img src="images/foto1.jpg" alt="Foto 1" />
+    <img src="images/foto2.jpg" alt="Foto 2" />
+    <img src="images/foto3.jpg" alt="Foto 3" />
+    <img src="images/foto4.jpg" alt="Foto 4" />
+  </div>
+  <p class="love-quote">"Menjalani hari bersama orang tersayang, itulah kekuatan terbesar dalam menjaga tubuh dan hati tetap sehat."</p>
+</div>
+
+<!-- Notifikasi -->
+<div class="section">
+  <strong>🔔 Pengingat Harian</strong>
+  <div id="notification-settings">
+    <label for="notifTime">Jam Pengingat:</label>
+    <input type="time" id="notifTime" value="07:00" />
+    <button onclick="setReminder()">Aktifkan</button>
+  </div>
+</div>
+
+<!-- Progress Lingkaran -->
+<div class="section">
+  <strong>📊 Total Progress</strong>
+  <canvas id="totalProgressChart" width="150" height="150"></canvas>
+</div>
+
+<!-- Grafik Mingguan -->
+<div class="section">
+  <strong>📈 Progress Mingguan</strong>
+  <canvas id="weeklyChart"></canvas>
+</div>
+
+<!-- Tabel Checklist -->
 <table>
   <thead>
     <tr>
       <th>Minggu</th>
       <th>Puasa:Makan</th>
       <th>Motivasi</th>
-      <th>Sen</th>
-      <th>Sel</th>
-      <th>Rab</th>
-      <th>Kam</th>
-      <th>Jum</th>
-      <th>Sab</th>
-      <th>Min</th>
+      <th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th><th>Min</th>
     </tr>
   </thead>
   <tbody id="tabelPuasa"></tbody>
@@ -140,6 +183,9 @@
     "Finish strong! Kamu berhasil 5 bulan penuh!"
   ];
 
+  const hari = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+  const tbody = document.getElementById("tabelPuasa");
+
   function getFastingHours(week) {
     if (week < 2) return "12:12";
     if (week < 4) return "14:10";
@@ -158,10 +204,8 @@
   function saveCheck(id) {
     const checkbox = document.getElementById(id);
     localStorage.setItem(id, checkbox.checked);
+    updateCharts();
   }
-
-  const tbody = document.getElementById("tabelPuasa");
-  const hari = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
   for (let i = 0; i < 20; i++) {
     let row = `<tr>
@@ -173,6 +217,93 @@
     }
     row += `</tr>`;
     tbody.innerHTML += row;
+  }
+
+  function getProgressData() {
+    let total = 0;
+    let weekly = Array(20).fill(0);
+    for (let i = 1; i <= 20; i++) {
+      for (let d = 0; d < 7; d++) {
+        const id = `week${i}_day${d}`;
+        if (localStorage.getItem(id) === 'true') {
+          total++;
+          weekly[i - 1]++;
+        }
+      }
+    }
+    return { total, weekly };
+  }
+
+  let donutChart, barChart;
+
+  function updateCharts() {
+    const { total, weekly } = getProgressData();
+    const percent = Math.round((total / 140) * 100);
+
+    if (donutChart) donutChart.destroy();
+    donutChart = new Chart(document.getElementById("totalProgressChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Selesai", "Belum"],
+        datasets: [{
+          data: [total, 140 - total],
+          backgroundColor: ["#d63384", "#f3c4d6"]
+        }]
+      },
+      options: {
+        plugins: {
+          tooltip: { enabled: false },
+          legend: { display: false },
+          title: { display: true, text: percent + "% selesai", color: "#4b004b" }
+        },
+        cutout: "70%",
+      }
+    });
+
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById("weeklyChart"), {
+      type: "bar",
+      data: {
+        labels: Array.from({ length: 20 }, (_, i) => `Minggu ${i + 1}`),
+        datasets: [{
+          label: "Hari berhasil",
+          data: weekly,
+          backgroundColor: "#ffb6c1"
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true, max: 7 }
+        }
+      }
+    });
+  }
+
+  updateCharts();
+
+  // Notifikasi pengingat
+  const notifInput = document.getElementById("notifTime");
+  notifInput.value = localStorage.getItem("notifTime") || "07:00";
+
+  function setReminder() {
+    const time = notifInput.value;
+    localStorage.setItem("notifTime", time);
+    if ("Notification" in window) {
+      Notification.requestPermission().then(perm => {
+        if (perm === "granted") {
+          const [h, m] = time.split(":").map(Number);
+          const now = new Date();
+          const target = new Date();
+          target.setHours(h, m, 0, 0);
+          if (now > target) target.setDate(target.getDate() + 1);
+          const delay = target - now;
+          setTimeout(() => {
+            new Notification("⏰ Waktunya puasa hari ini! Semangat!");
+          }, delay);
+          alert("Notifikasi akan muncul setiap hari jam " + time);
+        }
+      });
+    }
   }
 </script>
 
